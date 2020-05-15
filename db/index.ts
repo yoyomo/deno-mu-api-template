@@ -1,7 +1,15 @@
 import dbCommands from "./core/commands.ts";
 import { parse } from "https://deno.land/std/flags/mod.ts";
 
-type COMMANDS = 'init' | 'uninit' | 'create' | 'drop' | 'migrate' |'generate' | 'rollback' | 'seed';
+type COMMANDS =
+  | "init"
+  | "uninit"
+  | "create"
+  | "drop"
+  | "migrate"
+  | "generate"
+  | "rollback"
+  | "seed";
 
 const args = parse(Deno.args)._;
 const command = args[0] as COMMANDS;

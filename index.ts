@@ -9,18 +9,20 @@ const ENV = Deno.env.toObject();
 
 const PORT = parseInt(ENV.PORT) || 1234;
 
-const parseURL = (url: string) =>{
-  let [pathname, queryString] = url.split('?');
+const parseURL = (url: string) => {
+  let [pathname, queryString] = url.split("?");
 
-  let query: {[k:string]: string} = {};
+  let query: { [k: string]: string } = {};
 
-  queryString.split(',').map(param => {
-    const [key, value] = param.split('=');
-    query[key] = value;
-  });
+  if (queryString) {
+    queryString.split(",").map((param) => {
+      const [key, value] = param.split("=");
+      query[key] = value;
+    });
+  }
 
-  return {pathname, query};
-}
+  return { pathname, query };
+};
 
 const main = async () => {
   const query = db.connect(tables);
@@ -45,8 +47,7 @@ const main = async () => {
 
       //TODO create routes for controllers/update
 
-      response = await query(table)(
-        method,
+      response = await query(table)[method](
         { ...url.query, id: id },
         req.body,
       );

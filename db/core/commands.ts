@@ -1,9 +1,4 @@
 import { Pool } from "https://deno.land/x/postgres/mod.ts";
-import {
-  walkSync,
-  readFileStrSync,
-  writeFileStrSync,
-} from "https://deno.land/std/fs/mod.ts";
 
 const ENV = Deno.env.toObject();
 const MAX_POOL_SIZE = 5;
@@ -88,7 +83,7 @@ export default {
 
       let newMigrationFiles = [];
 
-      for (let migrationDirectory of walkSync("./db/migrate")) {
+      for (let migrationDirectory of Deno.readDirSync("./db/migrate")) {
         const migrationDirectoryName = migrationDirectory.name;
         const timestamp = parseInt(migrationDirectoryName.split("-")[0]);
 
@@ -96,9 +91,8 @@ export default {
 
         newMigrationFiles.push(migrationDirectoryName);
 
-        const sql = await readFileStrSync(
+        const sql = await Deno.readTextFileSync(
           `./db/migrate/${migrationDirectoryName}/up.sql`,
-          { encoding: "utf8" },
         );
 
         await db.query(sql);
@@ -118,16 +112,15 @@ export default {
     console.log("Rolling back last migration ...");
 
     transaction(initDB(), async (db) => {
-      let lastMigration 
-      for(lastMigration of walkSync("./db/migrate"));
-      if(!lastMigration) throw {message: 'No migration files found'};
+      let lastMigration;
+      for (lastMigration of Deno.readDirSync("./db/migrate"));
+      if (!lastMigration) throw { message: "No migration files found" };
       const lastMigrationName = lastMigration.name;
 
       const timestamp = parseInt(lastMigrationName.split("-")[0]);
 
-      const sql = readFileStrSync(
+      const sql = Deno.readTextFileSync(
         `./db/migrate/${lastMigrationName}/down.sql`,
-        { encoding: "utf8" },
       );
 
       await db.query(sql);
@@ -159,8 +152,8 @@ export default {
           const migrationDirectory = `./db/migrate/${now}-${migrationName}`;
 
           await Deno.mkdir(migrationDirectory, { recursive: true });
-          writeFileStrSync(`${migrationDirectory}/up.sql`, "");
-          writeFileStrSync(`${migrationDirectory}/down.sql`, "");
+          Deno.writeTextFileSync(`${migrationDirectory}/up.sql`, "");
+          Deno.writeTextFileSync(`${migrationDirectory}/down.sql`, "");
 
           console.log(`Created migration files for ${migrationDirectory}`);
         },
@@ -179,7 +172,7 @@ export default {
     console.log("Running seeds...");
 
     transaction(initDB(), async (db) => {
-      const sql = readFileStrSync(`./db/seeds.sql`, { encoding: "utf8" });
+      const sql = Deno.readTextFileSync(`./db/seeds.sql`);
 
       await db.query(sql);
 
