@@ -1,14 +1,14 @@
 # MU-API
 Model Update API template for deno
 
-Modular API using postgresql and nodejs. What I love about rails's easy database setup and development, now in deno. So, there is no need to even use `psql` with these sets of commands. Everything should be as simple and clean `deno run --allow-env --allow-net db/index.ts create`.
+Modular API using postgresql and nodejs. What I love about rails's easy database setup and development, now in deno. So, there is no need to even use `psql` with these sets of commands. Everything should be as simple and clean `./db.sh create`.
 
 ## Getting started
 
 ```bash
 git clone git@github.com:yoyomo/deno-mu-api-template.git mu-api
 cd mu-api
-deno run --allow-env --allow-net --unstable index.ts
+deno run --allow-env --allow-net index.ts
 ```
 
 ### Requirements
@@ -16,6 +16,11 @@ Postgresql:
 ```bash
 brew install postgresql
 brew services start postgresql
+```
+
+Deno:
+```bash
+brew install deno
 ```
 
 ### Basics
@@ -38,21 +43,21 @@ Environment variables in your `mu-api.env` file should reflect the ones defined 
 Or just run `source mu-api.env.example ` for now.
 
 ```bash
-deno run --allow-env --allow-net db/index.ts init # creates a user in pg
-deno run --allow-env --allow-net db/index.ts create # creates a dabatase
-deno run --allow-env --allow-net db/index.ts migrate # runs a migration for directories under db/migrate/[timestamp]-*/up.sql
-deno run --allow-env --allow-net db/index.ts seed # runs the seeds file under ./db/seed.sql
+./db.sh init # creates a user in pg
+./db.sh create # creates a dabatase
+./db.sh migrate # runs a migration for directories under db/migrate/[timestamp]-*/up.sql
+./db.sh seed # runs the seeds file under ./db/seed.sql
 ```
 
 #### Generate Migrations
 ```bash
-deno run --allow-env --allow-net db/index.ts generate migration create_users
+./db.sh generate migration create_users
 ```
 and then edit the generated SQL file under `db/migrate`. Now `node db migrate` should do something!
 
 #### Undo's
 ```bash
-deno run --allow-env --allow-net db/index.ts rollback # undos last migration under db/migrate/[timestamp]-*/down.sql
-deno run --allow-env --allow-net db/index.ts drop # drops database
-deno run --allow-env --allow-net db/index.ts uninit # deletes user
+./db.sh rollback # undos last migration under db/migrate/[timestamp]-*/down.sql
+./db.sh drop # drops database
+./db.sh uninit # deletes user
 ```
