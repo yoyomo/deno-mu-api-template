@@ -24,4 +24,4 @@ export default {
   bgMagenta: "\x1b[45m",
   bgCyan: "\x1b[46m",
   bgWhite: "\x1b[47m",
-}
+};
