@@ -1,7 +1,7 @@
 # MU-API
 Model Update API template for deno
 
-Modular API using postgresql and nodejs. What I love about rails's easy database setup and development, now in deno. So, there is no need to even use `psql` with these sets of commands. Everything should be as simple and clean `./db.sh create`.
+Modular API using postgresql and nodejs. What I love about rails's easy database setup and development, now in deno. So, there is no need to even use `psql` with these sets of commands. Everything should be as simple and clean as `./db.sh create`.
 
 ## Getting started
 
