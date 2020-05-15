@@ -42,6 +42,9 @@ A more clear example lies in `index.ts`
 Environment variables in your `mu-api.env` file should reflect the ones defined in `mu-api.env.example`. In order for the following commands to work.
 Or just run `source mu-api.env.example ` for now.
 
+Note:
+`./db.sh` is just an abbreviation for `deno run --allow-env --allow-net db/index.ts`. You can use it either way.
+
 ```bash
 ./db.sh init # creates a user in pg
 ./db.sh create # creates a dabatase
@@ -61,5 +64,3 @@ and then edit the generated SQL file under `db/migrate`. Now `./db.sh migrate` s
 ./db.sh drop # drops database
 ./db.sh uninit # deletes user
 ```
-
-where `./db/sh` is just an abbreviation for `deno run --allow-env --allow-net db/index.ts`
