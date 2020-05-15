@@ -61,3 +61,5 @@ and then edit the generated SQL file under `db/migrate`. Now `node db migrate` s
 ./db.sh drop # drops database
 ./db.sh uninit # deletes user
 ```
+
+where `./db/sh` is just an abbreviation for `deno run --allow-env --allow-net db/index.ts`
