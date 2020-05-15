@@ -53,7 +53,7 @@ Or just run `source mu-api.env.example ` for now.
 ```bash
 ./db.sh generate migration create_users
 ```
-and then edit the generated SQL file under `db/migrate`. Now `node db migrate` should do something!
+and then edit the generated SQL file under `db/migrate`. Now `./db.sh migrate` should do something!
 
 #### Undo's
 ```bash
