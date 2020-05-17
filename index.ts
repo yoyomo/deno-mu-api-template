@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std/http/server.ts";
+import { decode } from "https://deno.land/std/encoding/utf8.ts";
 
 import db, { AllowedMethods } from "./db/core/queries.ts";
 import colors from "./utils/colors.ts";
@@ -47,9 +48,11 @@ const main = async () => {
 
       //TODO create routes for controllers/update
 
+      const data = JSON.parse(decode (await Deno.readAll(req.body)) || "{}");
+
       response = await query(table)[method](
         { ...url.query, id: id },
-        req.body,
+        data,
       );
     } catch (error) {
       console.error(error);

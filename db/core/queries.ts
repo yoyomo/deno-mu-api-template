@@ -3,6 +3,20 @@ import { initDB } from "./commands.ts";
 
 export type AllowedMethods = "GET" | "POST" | "PATCH" | "DELETE";
 
+export const dbResultToJSON = (result: QueryResult) => {
+  let json: {[k: string]: string}[] = [];
+  result.rows.map(row => {
+    let obj: {[k:string]: string} = {};
+
+    result.rowDescription.columns.map((el, i) => {
+      obj[el.name] = row[i];
+    });
+    json.push(obj);
+  });
+
+  return json;
+}
+
 export default {
   connect: (tables: { [k: string]: any }) => {
     const db = initDB();
@@ -13,27 +27,23 @@ export default {
         GET: async ({ id }: any) => {
           let result: QueryResult;
           if (id) {
-            console.log(id);
-            console.log("isNumber", id === 1);
-            debugger
-
             result = await db.query(
               'SELECT * FROM "' + table + '" WHERE id = $1 LIMIT 1',
-              [id],
+              id
             );
           } else {
             result = await db.query(
               'SELECT * FROM "' + table + '" ORDER BY id ASC',
             );
           }
-          return { status: 200, data: result.rows };
+          return { status: 200, data: dbResultToJSON(result) };
         },
         DELETE: async ({ id }: any) => {
           const result = await db.query(
             `DELETE FROM "${table}" WHERE id = $1 RETURNING *`,
-            [id],
+            id,
           );
-          return { status: 200, data: result.rows };
+          return { status: 200, data: dbResultToJSON(result) };
         },
         POST: async (_: any, data: any) => {
           let sql = `INSERT INTO "${table}" (`;
@@ -58,8 +68,8 @@ export default {
           sqlValues += ")";
           sql += `${sqlValues} RETURNING *`;
 
-          const result = await db.query(sql, inputs);
-          return { status: 201, data: result.rows };
+          const result = await db.query(sql, ...inputs);
+          return { status: 201, data: dbResultToJSON(result) };
         },
         PATCH: async ({ id }: any, data?: any) => {
           let sql = `UPDATE "${table}" SET`;
@@ -80,8 +90,8 @@ export default {
           sql += ` WHERE id = $${inputs.length + 1} RETURNING *`;
           inputs.push(id);
 
-          const result = await db.query(sql, inputs);
-          return { status: 200, data: result.rows };
+          const result = await db.query(sql, ...inputs);
+          return { status: 200, data: dbResultToJSON(result) };
         },
       };
     };
