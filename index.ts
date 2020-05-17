@@ -4,8 +4,9 @@ import { decode } from "https://deno.land/std/encoding/utf8.ts";
 import db, { AllowedMethods } from "./db/core/queries.ts";
 import colors from "./utils/colors.ts";
 
-import { tables } from "./db/resources.ts";
+import { models } from "./db/resources/index.ts";
 
+import { Response } from "./db/core/queries.ts";
 const ENV = Deno.env.toObject();
 
 const PORT = parseInt(ENV.PORT) || 1234;
@@ -26,7 +27,7 @@ const parseURL = (url: string) => {
 };
 
 const main = async () => {
-  const query = db.connect(tables);
+  const query = db.connect(models);
 
   const s = serve({ port: PORT });
   console.log(
@@ -36,24 +37,33 @@ const main = async () => {
     const url = parseURL(req.url);
     const method = req.method as AllowedMethods;
 
-    let response: { status: number; data?: any; error?: string } = {
+    let response: Response = {
       status: 404,
       error: "Page not found",
     };
 
     try {
-      const path = url.pathname.split("/");
-      const table = path[1];
-      const id = path[2];
+      const data = JSON.parse(decode(await Deno.readAll(req.body)) || "{}");
 
-      //TODO create routes for controllers/update
+      const path = url.pathname.match(/\/([a-z]+)(\/[0-9]+)?(\/[a-zA-Z]+)?/);
 
-      const data = JSON.parse(decode (await Deno.readAll(req.body)) || "{}");
+      if (!path) throw { message: "path not found" };
 
-      response = await query(table)[method](
-        { ...url.query, id: id },
-        data,
-      );
+      const model = path[1];
+      const id = path[2] && path[2].split("/")[1];
+      const update = path[3] && path[3].split("/")[1];
+
+      if (update) {
+        response = await query(model).update()[method][update](
+          { ...url.query, id: id },
+          data,
+        );
+      } else {
+        response = await query(model)[method](
+          { ...url.query, id: id },
+          data,
+        );
+      }
     } catch (error) {
       console.error(error);
       response = { status: 500, error: error.message };

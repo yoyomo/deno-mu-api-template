@@ -12,7 +12,7 @@ deno run --allow-env --allow-net index.ts
 ```
 
 ### Requirements
-Postgresql: 
+- Postgresql: 
 ```bash
 brew install postgresql
 brew services start postgresql
@@ -54,13 +54,24 @@ Note:
 
 #### Generate Migrations
 ```bash
-./db.sh generate migration create_users
+./db.sh generate migration create_notes
 ```
-and then edit the generated SQL file under `db/migrate`. Now `./db.sh migrate` should do something!
+or better yet,
+```bash
+./db.sh generate model notes
+```
+
+and then edit the generated SQL file under `db/migrate` and the resource file under `./db/resources/notes.ts`. Now `./db.sh migrate` should do something!
 
 #### Undo's
 ```bash
 ./db.sh rollback # undos last migration under db/migrate/[timestamp]-*/down.sql
 ./db.sh drop # drops database
 ./db.sh uninit # deletes user
+```
+
+### Console
+A custom console that has access to the database functions is available through:
+```bash
+./console.sh
 ```

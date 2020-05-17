@@ -137,32 +137,81 @@ export default {
     transaction(initDB(), async (db) => {
       type Subcommand = "migration" | "model";
 
+      const generateMigration = async (
+        migrationName: string,
+        upSQL = "",
+        downSQL = "",
+      ) => {
+        if (!migrationName) {
+          throw { message: "USAGE: node db generate migration FILENAME" };
+        }
+
+        const now = (await db.query(
+          "SELECT EXTRACT(EPOCH from timezone('utc', now()))::integer as ts",
+        )).rows[0].ts;
+
+        const migrationDirectory = `./db/migrate/${now}-${migrationName}`;
+
+        Deno.mkdirSync(migrationDirectory, { recursive: true });
+        Deno.writeTextFileSync(`${migrationDirectory}/up.sql`, upSQL);
+        Deno.writeTextFileSync(`${migrationDirectory}/down.sql`, downSQL);
+
+        console.log(`Created migration files for ${migrationDirectory}`);
+      };
+
       const subcommands = {
-        //TODO impletement
-        model: async () => {},
-        migration: async (migrationName: string) => {
-          if (!migrationName) {
-            throw { message: "USAGE: node db generate migration FILENAME" };
+        migration: generateMigration,
+        model: async (modelName: string) => {
+          if (!modelName) {
+            throw { message: "USAGE: node db generate model MODEL_NAME" };
           }
 
-          const now = (await db.query(
-            "SELECT EXTRACT(EPOCH from timezone('utc', now()))::integer as ts",
-          )).rows[0].ts;
+          if (Deno.readTextFileSync(`./db/resources/${modelName}.ts`)) {
+            throw { message: `Resource ${modelName} already exists.` };
+          }
 
-          const migrationDirectory = `./db/migrate/${now}-${migrationName}`;
+          const upSQL = `CREATE TABLE "${modelName}" (\n` +
+            `  id SERIAL,\n` +
+            `  created_at timestamp default timezone('utc',now()),\n` +
+            `  updated_at timestamp default timezone('utc',now())\n` +
+            `)` +
+            ``;
+          const downSQL = `DROP TABLE "${modelName}";`;
+          const migrationName = `create_${modelName}`;
+          await generateMigration(migrationName, upSQL, downSQL);
 
-          await Deno.mkdir(migrationDirectory, { recursive: true });
-          Deno.writeTextFileSync(`${migrationDirectory}/up.sql`, "");
-          Deno.writeTextFileSync(`${migrationDirectory}/down.sql`, "");
+          Deno.writeTextFileSync(
+            `./db/resources/${modelName}.ts`,
+            `${"import {Model} from './model.ts';"}\n\n` +
+              `export const ${modelName}Model = {\n` +
+              `  ${modelName}: {\n` +
+              `    model: {\n` +
+              `      ...Model,\n` +
+              `    },\n` +
+              `    update: (db: Pool, queries: Queries) => ({\n` +
+              `    })\n` +
+              `  }\n` +
+              `}`,
+          );
 
-          console.log(`Created migration files for ${migrationDirectory}`);
+          console.log(
+            `Generated model templates for ${modelName}.\n` +
+              `now you can go edit the new migration files under ./db/migrate\n` +
+              `and the new resource file under ./db/resources\n` +
+              `according to the model specs!\n\n` +
+              `Note:\n` +
+              `\tYou must run the migrations yourself,\n` +
+              `\t& include the new resource variable inside the 'models' under ./db/resources/index.ts`,
+          );
         },
       };
 
       const subcommand = options[0] as Subcommand;
 
       if (!subcommands[subcommand]) {
-        throw { message: "USAGE: node db generate [migration] [options]" };
+        throw {
+          message: "USAGE: node db generate [migration|model] [options]",
+        };
       }
 
       await subcommands[subcommand](options[1]);
