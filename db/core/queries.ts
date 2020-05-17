@@ -71,7 +71,7 @@ export default {
           let sqlValues = " VALUES (";
           let inputs: string[] = [];
           Object.keys(data).map((attr, i) => {
-            if (!(attr in models[model])) {
+            if (!(attr in models[model].model)) {
               throw {
                 message: `Invalid parameter: "${attr}" in table "${model}"`,
               };
@@ -96,7 +96,7 @@ export default {
           let sql = `UPDATE "${model}" SET updated_at=timezone('utc', now())`;
           let inputs = [];
           Object.keys(data).map((attr, i) => {
-            if (!(attr in models[model])) {
+            if (!(attr in models[model].model)) {
               throw {
                 message: `Invalid parameter: "${attr}" in table "${model}"`,
               };
